@@ -1,0 +1,8 @@
+/**
+ * Module: index.css
+ * Created: 2026-09-03
+ * Purpose: Tailwind directives and global base styles.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

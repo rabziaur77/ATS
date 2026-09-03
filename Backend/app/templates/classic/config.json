@@ -1,0 +1,14 @@
+{
+  "name": "classic",
+  "accent_color": "#1a202c",
+  "font_family": "Georgia, 'Times New Roman', serif",
+  "section_order": [
+    "summary",
+    "experience",
+    "education",
+    "skills",
+    "certifications",
+    "languages",
+    "projects"
+  ]
+}

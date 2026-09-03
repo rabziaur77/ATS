@@ -1,0 +1,13 @@
+{
+  "name": "technical",
+  "accent_color": "#0f766e",
+  "font_family": "'Courier New', monospace",
+  "section_order": [
+    "skills",
+    "summary",
+    "experience",
+    "projects",
+    "education",
+    "certifications"
+  ]
+}

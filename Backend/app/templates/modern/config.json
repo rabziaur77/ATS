@@ -1,0 +1,14 @@
+{
+  "name": "modern",
+  "accent_color": "#2563EB",
+  "font_family": "'Segoe UI', Helvetica, Arial, sans-serif",
+  "section_order": [
+    "summary",
+    "experience",
+    "skills",
+    "education",
+    "projects",
+    "certifications",
+    "languages"
+  ]
+}

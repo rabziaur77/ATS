@@ -1,0 +1,13 @@
+{
+  "name": "academic",
+  "accent_color": "#6b21a8",
+  "font_family": "Cambria, Georgia, serif",
+  "section_order": [
+    "summary",
+    "education",
+    "experience",
+    "certifications",
+    "languages",
+    "skills"
+  ]
+}

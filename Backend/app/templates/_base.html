@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ personal_info.name or "Resume" }}</title>
+<style>
+{% block styles %}
+  body { font-family: Helvetica, Arial, sans-serif; color: #1a202c; margin: 0; padding: 40px; }
+{% endblock %}
+  .name { font-size: 24px; font-weight: bold; }
+  .contact { color: #4a5568; font-size: 12px; margin: 4px 0 16px; }
+  .contact span + span::before { content: "  |  "; color: #cbd5e0; }
+  h2 { font-size: 13px; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid {{ config.get('accent_color', '#2563EB') }}; padding-bottom: 4px; margin: 20px 0 8px; }
+  .item { margin-bottom: 10px; }
+  .item-head { display: flex; justify-content: space-between; font-size: 13px; }
+  .item-title { font-weight: bold; }
+  .item-date { color: #718096; font-size: 12px; }
+  .item-sub { color: #4a5568; font-size: 12px; }
+  .desc { font-size: 12px; color: #2d3748; margin-top: 2px; }
+  ul { margin: 4px 0 0; padding-left: 18px; }
+  li { font-size: 12px; margin-bottom: 2px; }
+  .skills-tags { padding-left: 0; }
+  .skills-tags li { display: inline-block; background: {{ config.get('accent_color', '#2563EB') }}; color: #fff; padding: 2px 8px; border-radius: 10px; margin: 2px 4px 2px 0; }
+</style>
+</head>
+<body>
+  <div class="name">{{ personal_info.name }}</div>
+  <div class="contact">
+    {% for part in [personal_info.email, personal_info.phone, personal_info.location, personal_info.linkedin, personal_info.website] if part %}
+    <span>{{ part }}</span>
+    {% endfor %}
+  </div>
+
+  {% for section in sections %}
+    {% if section.key == 'summary' %}
+      <h2>Summary</h2>
+      <p class="desc">{{ summary }}</p>
+    {% elif section.key == 'experience' %}
+      <h2>Experience</h2>
+      {% for exp in experience %}
+        <div class="item">
+          <div class="item-head">
+            <span class="item-title">{{ exp.title }}</span>
+            <span class="item-date">{{ exp.start_date }} - {{ exp.end_date }}</span>
+          </div>
+          <div class="item-sub">{{ exp.company }}{% if exp.location %} &middot; {{ exp.location }}{% endif %}</div>
+          {% if exp.description %}<div class="desc">{{ exp.description }}</div>{% endif %}
+        </div>
+      {% endfor %}
+    {% elif section.key == 'education' %}
+      <h2>Education</h2>
+      {% for edu in education %}
+        <div class="item">
+          <div class="item-head">
+            <span class="item-title">{{ edu.institution }}</span>
+            <span class="item-date">{{ edu.start_date }} - {{ edu.end_date }}</span>
+          </div>
+          <div class="item-sub">{{ edu.degree }}{% if edu.gpa %} &middot; GPA: {{ edu.gpa }}{% endif %}</div>
+        </div>
+      {% endfor %}
+    {% elif section.key == 'skills' %}
+      <h2>Skills</h2>
+      <ul class="skills-tags">
+        {% for sk in skills %}<li>{{ sk }}</li>{% endfor %}
+      </ul>
+    {% elif section.key == 'certifications' %}
+      <h2>Certifications</h2>
+      <ul>{% for c in certifications %}<li>{{ c }}</li>{% endfor %}</ul>
+    {% elif section.key == 'languages' %}
+      <h2>Languages</h2>
+      <ul>{% for l in languages %}<li>{{ l }}</li>{% endfor %}</ul>
+    {% elif section.key == 'projects' %}
+      <h2>Projects</h2>
+      {% for p in projects %}<div class="item"><div class="item-title">{{ p.get('name', p) }}</div></div>{% endfor %}
+    {% endif %}
+  {% endfor %}
+</body>
+</html>

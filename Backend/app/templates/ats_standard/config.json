@@ -1,0 +1,14 @@
+{
+  "name": "ats_standard",
+  "accent_color": "#334155",
+  "font_family": "Arial, sans-serif",
+  "section_order": [
+    "summary",
+    "experience",
+    "education",
+    "skills",
+    "certifications",
+    "languages",
+    "projects"
+  ]
+}

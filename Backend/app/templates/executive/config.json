@@ -1,0 +1,12 @@
+{
+  "name": "executive",
+  "accent_color": "#7f1d1d",
+  "font_family": "Palatino, Georgia, serif",
+  "section_order": [
+    "summary",
+    "experience",
+    "education",
+    "certifications",
+    "skills"
+  ]
+}
