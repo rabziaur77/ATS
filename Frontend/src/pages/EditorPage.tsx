@@ -39,7 +39,8 @@ export default function EditorPage() {
   const handleSave = () => {
     setError(null);
     save.mutate(parsed, {
-      onSuccess: () => navigate(`/template/${resumeId}`),
+      onSuccess: () =>
+        navigate(`/template/${resumeId}?template=${encodeURIComponent(templateId)}`),
       onError: (err) => setError(errorMessage(err)),
     });
   };

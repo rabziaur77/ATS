@@ -1,12 +1,15 @@
-{
-  "name": "elegant",
-  "accent_color": "#0f172a",
-  "font_family": "Georgia, serif",
-  "section_order": [
-    "summary",
-    "experience",
-    "education",
-    "skills",
-    "certifications"
-  ]
+﻿{
+    "name":  "elegant",
+    "layout":  "single_column_refined",
+    "accent_color":  "#0f172a",
+    "font_family":  "Georgia, serif",
+    "section_order":  [
+                          "summary",
+                          "experience",
+                          "education",
+                          "skills",
+                          "certifications",
+                          "languages",
+                          "projects"
+                      ]
 }

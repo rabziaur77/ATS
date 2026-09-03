@@ -1,12 +1,15 @@
-{
-  "name": "minimal",
-  "accent_color": "#111827",
-  "font_family": "Helvetica, Arial, sans-serif",
-  "section_order": [
-    "summary",
-    "experience",
-    "education",
-    "skills",
-    "languages"
-  ]
+﻿{
+    "name":  "minimal",
+    "layout":  "single_column_reduced",
+    "accent_color":  "#111827",
+    "font_family":  "Helvetica, Arial, sans-serif",
+    "section_order":  [
+                          "summary",
+                          "experience",
+                          "education",
+                          "skills",
+                          "languages",
+                          "certifications",
+                          "projects"
+                      ]
 }

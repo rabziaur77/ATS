@@ -1,13 +1,15 @@
-{
-  "name": "professional",
-  "accent_color": "#1d4ed8",
-  "font_family": "Calibri, Arial, sans-serif",
-  "section_order": [
-    "summary",
-    "experience",
-    "skills",
-    "education",
-    "certifications",
-    "languages"
-  ]
+﻿{
+    "name":  "professional",
+    "layout":  "single_column_corporate",
+    "accent_color":  "#1d4ed8",
+    "font_family":  "Calibri, Arial, sans-serif",
+    "section_order":  [
+                          "summary",
+                          "experience",
+                          "skills",
+                          "education",
+                          "certifications",
+                          "languages",
+                          "projects"
+                      ]
 }

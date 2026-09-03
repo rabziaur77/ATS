@@ -1,13 +1,15 @@
-{
-  "name": "technical",
-  "accent_color": "#0f766e",
-  "font_family": "'Courier New', monospace",
-  "section_order": [
-    "skills",
-    "summary",
-    "experience",
-    "projects",
-    "education",
-    "certifications"
-  ]
+﻿{
+    "name":  "technical",
+    "layout":  "skills_first",
+    "accent_color":  "#0f766e",
+    "font_family":  "\u0027Courier New\u0027, monospace",
+    "section_order":  [
+                          "skills",
+                          "summary",
+                          "experience",
+                          "projects",
+                          "education",
+                          "certifications",
+                          "languages"
+                      ]
 }

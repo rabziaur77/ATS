@@ -1,14 +1,15 @@
-{
-  "name": "classic",
-  "accent_color": "#1a202c",
-  "font_family": "Georgia, 'Times New Roman', serif",
-  "section_order": [
-    "summary",
-    "experience",
-    "education",
-    "skills",
-    "certifications",
-    "languages",
-    "projects"
-  ]
+﻿{
+    "name":  "classic",
+    "layout":  "single_column_traditional",
+    "accent_color":  "#1a202c",
+    "font_family":  "Georgia, \u0027Times New Roman\u0027, serif",
+    "section_order":  [
+                          "summary",
+                          "experience",
+                          "education",
+                          "skills",
+                          "certifications",
+                          "languages",
+                          "projects"
+                      ]
 }

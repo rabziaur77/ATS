@@ -73,6 +73,7 @@ export interface TemplateOut {
   id: string;
   name: string;
   style?: string | null;
+  layout?: string | null;
   is_custom: boolean;
 }
 

@@ -17,6 +17,7 @@ class TemplateOut(BaseModel):
     id: str
     name: str
     style: Optional[str] = None
+    layout: Optional[str] = None
     is_custom: bool = False
 
 

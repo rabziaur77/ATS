@@ -1,14 +1,15 @@
-{
-  "name": "ats_standard",
-  "accent_color": "#334155",
-  "font_family": "Arial, sans-serif",
-  "section_order": [
-    "summary",
-    "experience",
-    "education",
-    "skills",
-    "certifications",
-    "languages",
-    "projects"
-  ]
+﻿{
+    "name":  "ats_standard",
+    "layout":  "single_column_plain",
+    "accent_color":  "#334155",
+    "font_family":  "Arial, sans-serif",
+    "section_order":  [
+                          "summary",
+                          "experience",
+                          "education",
+                          "skills",
+                          "certifications",
+                          "languages",
+                          "projects"
+                      ]
 }

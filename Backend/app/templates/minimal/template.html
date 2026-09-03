@@ -1,5 +1,66 @@
-{% extends '_base.html' %}
-{% block styles %}
-  body { font-family: Helvetica, Arial, sans-serif; color: #1a202c; margin: 0; padding: 40px; }
-  .name { text-transform: uppercase; }
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ personal_info.name or "Resume" }}</title>
+<style>
+  body { font-family: Helvetica, Arial, sans-serif; color: #111827; margin: 0 auto; max-width: 700px; padding: 72px 48px; font-size: 11px; line-height: 1.55; }
+  .name { font-size: 28px; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; margin: 0 0 4px; color: {{ config.get('accent_color', '#111827') }}; }
+  .contact { color: #6b7280; font-size: 11px; margin: 0 0 32px; }
+  .contact span + span::before { content: "  \00B7  "; color: #d1d5db; }
+  h2 { font-size: 10px; font-weight: 400; text-transform: uppercase; letter-spacing: 3px; color: #9ca3af; margin: 32px 0 8px; }
+  .item { margin-bottom: 14px; }
+  .item-head { display: flex; justify-content: space-between; font-size: 12px; }
+  .item-title { font-weight: 600; }
+  .item-date { color: #6b7280; font-size: 10px; }
+  .item-sub { color: #4b5563; font-size: 11px; }
+  .desc { font-size: 11px; color: #374151; margin-top: 2px; }
+  .skills { font-size: 11px; color: #374151; }
+  ul { margin: 4px 0 0; padding-left: 16px; }
+  li { font-size: 11px; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+  <div class="name">{{ personal_info.name }}</div>
+  <div class="contact">
+    {% for part in [personal_info.email, personal_info.phone, personal_info.location] if part %}
+    <span>{{ part }}</span>
+    {% endfor %}
+  </div>
+
+  {% for section in sections %}
+    {% if section.key == 'summary' %}
+      <h2>About</h2>
+      <p class="desc">{{ summary }}</p>
+    {% elif section.key == 'experience' %}
+      <h2>Experience</h2>
+      {% for exp in experience %}
+        <div class="item">
+          <div class="item-head"><span class="item-title">{{ exp.title }}</span><span class="item-date">{{ exp.start_date }} - {{ exp.end_date }}</span></div>
+          <div class="item-sub">{{ exp.company }}</div>
+        </div>
+      {% endfor %}
+    {% elif section.key == 'education' %}
+      <h2>Education</h2>
+      {% for edu in education %}
+        <div class="item">
+          <div class="item-head"><span class="item-title">{{ edu.institution }}</span><span class="item-date">{{ edu.start_date }} - {{ edu.end_date }}</span></div>
+          <div class="item-sub">{{ edu.degree }}</div>
+        </div>
+      {% endfor %}
+    {% elif section.key == 'skills' %}
+      <h2>Skills</h2>
+      <p class="skills">{{ skills | join("  \00B7  ") }}</p>
+    {% elif section.key == 'certifications' %}
+      <h2>Certifications</h2>
+      <p class="skills">{{ certifications | join(", ") }}</p>
+    {% elif section.key == 'languages' %}
+      <h2>Languages</h2>
+      <p class="skills">{{ languages | join(", ") }}</p>
+    {% elif section.key == 'projects' %}
+      <h2>Projects</h2>
+      {% for p in projects %}<p class="desc">{{ p.get('name', p) }}</p>{% endfor %}
+    {% endif %}
+  {% endfor %}
+</body>
+</html>

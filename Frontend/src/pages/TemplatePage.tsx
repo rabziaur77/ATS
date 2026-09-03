@@ -1,40 +1,35 @@
 /**
  * Module: TemplatePage.tsx
  * Created: 2026-09-03
- * Purpose: Template selection with live preview, then generate a resume.
+ * Purpose: Confirm the template chosen during editing, preview it, and
+ *          generate a resume.
  */
 
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import PreviewPane from "../components/PreviewPane";
-import TemplatePicker from "../components/TemplatePicker";
 import { useGenerateResume } from "../hooks/useResume";
-import { useTemplates } from "../hooks/useTemplates";
 import { errorMessage } from "../lib/api";
-import type { TemplateOut } from "../types/resume";
 
-/** Template page: pick a template, preview it, and generate the resume. */
+const DEFAULT_TEMPLATE = "classic";
+
+/** Template page: preview the chosen template and generate the resume. */
 export default function TemplatePage() {
   const { id } = useParams<{ id: string }>();
   const resumeId = Number(id);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const templates = useTemplates();
-  const generate = useGenerateResume(resumeId);
+  const templateId = searchParams.get("template") ?? DEFAULT_TEMPLATE;
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSelect = (t: TemplateOut) => setSelectedId(t.id);
+  const generate = useGenerateResume(resumeId);
 
   const handleGenerate = (format: "pdf" | "docx") => {
-    if (!selectedId) {
-      setError("Please select a template first.");
-      return;
-    }
     setError(null);
     generate.mutate(
-      { template_id: selectedId, format },
+      { template_id: templateId, format },
       {
         onSuccess: (result) => {
           navigate("/done", {
@@ -52,69 +47,52 @@ export default function TemplatePage() {
 
   return (
     <div>
-      <div className="mb-4">
-        <Link
-          to={`/editor/${resumeId}`}
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Confirm your template
+          </h2>
+          <p className="text-sm text-gray-500">
+            Review the preview for your selected template, then generate.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate(`/editor/${resumeId}`)}
           className="text-sm text-blue-600 hover:underline"
         >
           ← Back to editor
-        </Link>
-        <h2 className="text-2xl font-semibold text-gray-900 mt-1">
-          Choose a template
-        </h2>
-        <p className="text-sm text-gray-500">
-          Select from the formats below; the preview updates live.
-        </p>
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section>
-          {templates.isPending ? (
-            <p className="text-gray-500">Loading templates…</p>
-          ) : (
-            <TemplatePicker
-              templates={templates.data?.items ?? []}
-              selectedId={selectedId}
-              onSelect={handleSelect}
-            />
-          )}
-        </section>
-
-        <section className="flex flex-col gap-4">
-          {selectedId ? (
-            <>
-              <div className="h-[520px]">
-                <PreviewPane resumeId={resumeId} templateId={selectedId} />
-              </div>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleGenerate("pdf")}
-                  disabled={generate.isPending}
-                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-                >
-                  Generate PDF
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleGenerate("docx")}
-                  disabled={generate.isPending}
-                  className="flex-1 bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 disabled:opacity-50"
-                >
-                  Generate DOCX
-                </button>
-              </div>
-            </>
-          ) : (
-            <p className="text-gray-500">
-              Select a template on the left to preview and generate.
-            </p>
-          )}
-          {generate.isPending && (
-            <p className="text-sm text-blue-600">Generating your resume…</p>
-          )}
-          {error && <p className="text-sm text-red-600">{error}</p>}
-        </section>
+      <div className="max-w-3xl mx-auto">
+        <div className="flex flex-col gap-4">
+          <div className="h-[520px]">
+            <PreviewPane resumeId={resumeId} templateId={templateId} />
+          </div>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => handleGenerate("pdf")}
+              disabled={generate.isPending}
+              className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            >
+              Generate PDF
+            </button>
+            <button
+              type="button"
+              onClick={() => handleGenerate("docx")}
+              disabled={generate.isPending}
+              className="flex-1 bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 disabled:opacity-50"
+            >
+              Generate DOCX
+            </button>
+          </div>
+        </div>
+        {generate.isPending && (
+          <p className="text-sm text-blue-600 mt-3">Generating your resume…</p>
+        )}
+        <p className="text-sm text-red-600 mt-2">{error}</p>
       </div>
     </div>
   );

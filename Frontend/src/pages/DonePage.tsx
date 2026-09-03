@@ -47,7 +47,7 @@ export default function DonePage() {
       </h2>
       <p className="text-sm text-gray-500 mt-1">
         Generated as <span className="uppercase">{format}</span>. Download it
-        below, or go back to try another template.
+        below, or go back to choose a different template.
       </p>
 
       <a
@@ -59,10 +59,10 @@ export default function DonePage() {
 
       <div className="mt-4 flex gap-3">
         <Link
-          to={`/template/${resumeId}`}
+          to={`/editor/${resumeId}`}
           className="text-sm text-blue-600 hover:underline"
         >
-          Try another template
+          Choose a different template
         </Link>
         <button
           type="button"

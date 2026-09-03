@@ -1,11 +1,15 @@
-{
-  "name": "simple",
-  "accent_color": "#000000",
-  "font_family": "Arial, sans-serif",
-  "section_order": [
-    "summary",
-    "experience",
-    "education",
-    "skills"
-  ]
+﻿{
+    "name":  "simple",
+    "layout":  "single_column_bare",
+    "accent_color":  "#000000",
+    "font_family":  "Arial, sans-serif",
+    "section_order":  [
+                          "summary",
+                          "experience",
+                          "education",
+                          "skills",
+                          "certifications",
+                          "languages",
+                          "projects"
+                      ]
 }

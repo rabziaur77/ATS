@@ -61,8 +61,26 @@ class TemplateService:
             "id": template_id,
             "name": template_id.replace("_", " ").title(),
             "style": BUILTIN_STYLES.get(template_id, ""),
+            "layout": self._builtin_layout(template_id),
             "is_custom": False,
         }
+
+    def _builtin_layout(self, template_id: str) -> str:
+        """Return the structural layout label for a built-in template.
+
+        Falls back to "single_column" when a config file is missing or lacks
+        a layout field, so listing never breaks on malformed configs.
+
+        Args:
+            template_id: Name of the built-in template folder.
+
+        Returns:
+            str: The template's layout label.
+        """
+        try:
+            return str(self.get_builtin_config(template_id).get("layout", "single_column"))
+        except NotFoundError:
+            return "single_column"
 
     def get_builtin_config(self, template_id: str) -> dict:
         """Load the layout config JSON for a built-in template.
@@ -157,14 +175,17 @@ class TemplateService:
                 "id": str(custom.id),
                 "html": custom.html_template,
                 "config": custom.config,
+                "layout": custom.config.get("layout", "custom"),
                 "is_custom": True,
             }
 
         if (self.builtin_root / template_id).is_dir():
+            config = self.get_builtin_config(template_id)
             return {
                 "id": template_id,
                 "html": self.get_builtin_html(template_id),
-                "config": self.get_builtin_config(template_id),
+                "config": config,
+                "layout": config.get("layout", "single_column"),
                 "is_custom": False,
             }
 
