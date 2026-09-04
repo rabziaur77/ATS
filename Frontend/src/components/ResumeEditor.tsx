@@ -66,8 +66,8 @@ export default function ResumeEditor({ parsed, onChange }: Props) {
         <h3 className="text-sm font-semibold text-gray-800 mb-2">Experience</h3>
         {parsed.experience.map((exp, i) => (
           <div key={i} className="border border-gray-200 rounded p-3 mb-3 grid grid-cols-2 gap-2">
-            <TextField label="Title" value={exp.title} onChange={(v) => setExp(i, "title", v)} />
             <TextField label="Company" value={exp.company} onChange={(v) => setExp(i, "company", v)} />
+            <TextField label="Title" value={exp.title} onChange={(v) => setExp(i, "title", v)} />
             <TextField label="Location" value={exp.location} onChange={(v) => setExp(i, "location", v)} />
             <TextField label="Start" value={exp.start_date} onChange={(v) => setExp(i, "start_date", v)} />
             <TextField label="End" value={exp.end_date} onChange={(v) => setExp(i, "end_date", v)} />

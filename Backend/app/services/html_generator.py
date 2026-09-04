@@ -2,7 +2,8 @@
 Module: html_generator.py
 Created: 2026-09-03
 Purpose: Renders template-ready resume data into HTML and safe PDF/DOCX
-         formats using Jinja2, reportlab, and python-docx.
+         formats using Jinja2, Playwright (Chromium) for PDF, and
+         python-docx for DOCX.
 """
 
 import re
@@ -12,15 +13,6 @@ from typing import Optional
 from docx import Document as DocxDocument
 from docx.shared import Pt, RGBColor
 from jinja2.sandbox import SandboxedEnvironment
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.platypus import (
-    Paragraph,
-    SimpleDocTemplate,
-    Spacer,
-)
 
 from app.config import settings
 from app.utils.exceptions import TemplateRenderError
@@ -95,65 +87,54 @@ def render_pdf(
 
 
 def _html_to_pdf(html: str, config: dict, output_path: Path) -> None:
-    """Convert a simple HTML string into a styled PDF.
+    """Render the exact preview HTML to a styled PDF via Chromium.
+
+    Uses the same rendered HTML+CSS string the browser preview shows, so the
+    downloaded PDF reproduces the template's true layout (two-column sidebars,
+    flex alignment, colored bands, skill chips) instead of a flattened generic
+    document.
 
     Args:
-        html: HTML content to render.
-        config: Layout config providing fonts/colors/headings.
+        html: The fully rendered template HTML (identical to the preview).
+        config: Template layout config (kept for API compatibility).
         output_path: Destination PDF path.
+
+    Raises:
+        TemplateRenderError: If Chromium cannot be launched or the PDF fails.
     """
-    doc = SimpleDocTemplate(
-        str(output_path), pagesize=letter,
-        rightMargin=inch, leftMargin=inch, topMargin=inch, bottomMargin=inch,
-    )
-    styles = getSampleStyleSheet()
+    try:
+        import asyncio
+        import sys
 
-    name = config.get("name", "system")
-    color_hex = config.get("accent_color", "#2563EB")
-    accent = colors.HexColor(color_hex)
+        # On Windows, Playwright's sync API builds its own event loop and calls
+        # asyncio.create_subprocess_exec to launch Chromium. A Selector loop
+        # raises NotImplementedError there, so force the Proactor policy in this
+        # thread before Playwright starts. This is thread-local-scoped and avoids
+        # disturbing the app's serving loop or the uvicorn --reload reloader.
+        if sys.platform == "win32":
+            asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
-    styles.add(ParagraphStyle(
-        name="ResumeName", fontName="Helvetica-Bold", fontSize=22,
-        textColor=colors.HexColor("#111827"), spaceAfter=4, leading=26,
-    ))
-    styles.add(ParagraphStyle(
-        name="ResumeContact", fontName="Helvetica", fontSize=9,
-        textColor=colors.HexColor("#4B5563"), spaceAfter=10, leading=12,
-    ))
-    styles.add(ParagraphStyle(
-        name="ResumeHeading", fontName="Helvetica-Bold", fontSize=11,
-        textColor=accent, spaceBefore=10, spaceAfter=4, leading=13,
-    ))
-    styles.add(ParagraphStyle(
-        name="ResumeBody", fontName="Helvetica", fontSize=9.5,
-        textColor=colors.HexColor("#111827"), spaceAfter=4, leading=12,
-    ))
-    styles.add(ParagraphStyle(
-        name="ResumeBullet", fontName="Helvetica", fontSize=9.5,
-        textColor=colors.HexColor("#111827"), leftIndent=12, spaceAfter=2, leading=12,
-    ))
+        from playwright.sync_api import sync_playwright
 
-    story: list = []
-    headings = _extract_headings(html)
-    body = _strip_tags(html)
-
-    sections = _split_sections(body, headings)
-
-    for title, lines in sections:
-        if title:
-            story.append(Paragraph(_esc(title), styles["ResumeHeading"]))
-            story.append(Spacer(1, 2))
-        for line in lines:
-            if not line.strip():
-                continue
-            if _is_heading_line(line, headings) and title is None:
-                story.append(Paragraph(_esc(line), styles["ResumeHeading"]))
-                continue
-            style = styles["ResumeBullet"] if line.strip().startswith(("-", "•")) else styles["ResumeBody"]
-            story.append(Paragraph(_esc(line), style))
-        story.append(Spacer(1, 6))
-
-    doc.build(story)
+        # Playwright's sync API is bound to the calling thread. Launch a fresh
+        # browser per call so concurrent worker threads and direct calls each
+        # own their own instance (avoids "Cannot switch to a different thread").
+        with sync_playwright() as p:
+            browser = p.chromium.launch()
+            try:
+                page = browser.new_page()
+                page.set_content(html, wait_until="load")
+                page.pdf(
+                    path=str(output_path),
+                    format="Letter",
+                    print_background=True,
+                    prefer_css_page_size=False,
+                )
+            finally:
+                browser.close()
+    except Exception as exc:
+        detail = f"{type(exc).__name__}: {exc!r}"
+        raise TemplateRenderError(f"PDF render failed: {detail}") from exc
 
 
 def _extract_headings(html: str) -> list[str]:
@@ -171,18 +152,26 @@ def _extract_headings(html: str) -> list[str]:
 def _strip_tags(html: str) -> str:
     """Remove HTML tags, turning block boundaries into newlines.
 
+    Drops the inner content of ``<style>``/``<script>`` blocks and the whole
+    ``<head>`` region first, so CSS rules, scripts, and metadata never leak
+    into the extracted text used for PDF/DOCX generation.
+
     Args:
         html: The HTML content.
 
     Returns:
         str: Text with tags stripped and paragraphs separated by newlines.
     """
+    html = re.sub(r"<style[^>]*>.*?</style>", "", html, flags=re.I | re.S)
+    html = re.sub(r"<script[^>]*>.*?</script>", "", html, flags=re.I | re.S)
+    html = re.sub(r"<head[^>]*>.*?</head>", "", html, flags=re.I | re.S)
     html = re.sub(r"<(?:li|p|div|br|tr)[^>]*>", "\n", html, flags=re.I)
     html = re.sub(r"</(?:li|p|div|tr)[^>]*>", "\n", html, flags=re.I)
     html = re.sub(r"<[^>]+>", "", html)
+    html = re.sub(r"\n{2,}", "\n", html)
     import html as htmlmod
 
-    return htmlmod.unescape(html)
+    return htmlmod.unescape(html).strip()
 
 
 def _split_sections(text: str, headings: list[str]) -> list[tuple[Optional[str], list[str]]]:
@@ -216,29 +205,7 @@ def _split_sections(text: str, headings: list[str]) -> list[tuple[Optional[str],
     return sections
 
 
-def _is_heading_line(line: str, headings: list[str]) -> bool:
-    """Check if a text line matches a known heading.
 
-    Args:
-        line: A text line.
-        headings: Known heading texts.
-
-    Returns:
-        bool: True if the line is a heading.
-    """
-    return line in headings
-
-
-def _esc(text: str) -> str:
-    """Escape text for reportlab Paragraph markup.
-
-    Args:
-        text: Plain text.
-
-    Returns:
-        str: Text with < and > escaped.
-    """
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def render_docx(
@@ -291,19 +258,16 @@ def _html_to_docx(html: str, config: dict, output_path: Path) -> None:
             run.bold = True
             run.font.size = Pt(13)
             run.font.color.rgb = accent
-        else:
-            first = True
-            for line in lines:
-                if not line.strip():
-                    continue
-                para = doc.add_paragraph()
-                if not first and line.strip().startswith(("-", "•")):
-                    para.style = doc.styles["List Bullet"]
-                run = para.add_run(_strip_list_marker(line))
-                run.font.size = Pt(10)
-                first = False
-        if not lines and title is None:
-            pass
+        first = True
+        for line in lines:
+            if not line.strip():
+                continue
+            para = doc.add_paragraph()
+            if not first and line.strip().startswith(("-", "•")):
+                para.style = doc.styles["List Bullet"]
+            run = para.add_run(_strip_list_marker(line))
+            run.font.size = Pt(10)
+            first = False
 
     doc.save(str(output_path))
 

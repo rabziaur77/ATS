@@ -258,7 +258,31 @@ async def download_resume(
         raise HTTPException(status_code=400, detail="Invalid file path")
     if not path.exists():
         raise NotFoundError("Generated resume file")
-    return FileResponse(str(path))
+    return FileResponse(
+        str(path),
+        media_type=_media_type(path.suffix),
+        filename=path.name,
+    )
+
+
+def _media_type(suffix: str) -> str:
+    """Return the correct content type for a generated resume file.
+
+    mimetypes.guess_type() returns None for .docx on some systems (notably
+    Windows), which would otherwise cause FileResponse to serve it as
+    text/plain. Map the known resume formats explicitly.
+
+    Args:
+        suffix: File extension including the dot (e.g. ".docx").
+
+    Returns:
+        str: The HTTP media type for the file.
+    """
+    return {
+        ".pdf": "application/pdf",
+        ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ".html": "text/html; charset=utf-8",
+    }.get(suffix.lower(), "application/octet-stream")
 
 
 async def _get_scoped_resume(

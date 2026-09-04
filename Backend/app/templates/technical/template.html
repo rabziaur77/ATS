@@ -42,8 +42,8 @@
       <h2>Experience</h2>
       {% for exp in experience %}
         <div class="item">
-          <div class="item-head"><span class="item-title">{{ exp.title }}</span><span class="item-date">{{ exp.start_date }} - {{ exp.end_date }}</span></div>
-          <div class="item-sub">{{ exp.company }}{% if exp.location %} &middot; {{ exp.location }}{% endif %}</div>
+          <div class="item-head"><span class="item-title">{{ exp.company }}</span><span class="item-date">{{ exp.start_date }} - {{ exp.end_date }}</span></div>
+          <div class="item-sub">{{ exp.title }}{% if exp.location %} &middot; {{ exp.location }}{% endif %}</div>
           {% if exp.description %}<p class="desc">{{ exp.description }}</p>{% endif %}
         </div>
       {% endfor %}

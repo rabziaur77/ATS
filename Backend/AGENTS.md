@@ -38,7 +38,7 @@ Download
 | Framework        | FastAPI (Python)                     |
 | Database         | SQLite + SQLAlchemy (portable later) |
 | CV Parsing       | pdfplumber (PDF), python-docx (DOCX) |
-| PDF Generation   | reportlab                            |
+| PDF Generation   | Playwright (Chromium) -> print-to-PDF      |
 | DOCX Generation  | python-docx                          |
 | HTML Generation  | Jinja2 templates                     |
 | AI Service       | OpenAI API (optional enhancement)    |
@@ -59,6 +59,9 @@ source .venv/bin/activate     # macOS/Linux
 
 # install dependencies
 pip install -r requirements.txt
+
+# one-time: download the Chromium browser used for PDF rendering
+python -m playwright install chromium
 ```
 
 ### Run (development server)
