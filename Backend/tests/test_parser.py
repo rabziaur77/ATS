@@ -196,3 +196,36 @@ def test_parse_experience_company_first_with_location():
         ("Senior Developer", "Tech Corp", "New York, NY", "2021", "Present"),
         ("Developer", "Startup Inc", "", "2018", "2021"),
     ]
+
+
+def test_parse_experience_pipe_company_first():
+    """A 'Company | Title | Dates' pipe heading keeps the role in the title."""
+    text = (
+        "Ziaur Rab\nz@example.com\n"
+        "Experience\n"
+        "EPAM Systems | Senior Software Engineer | Jun 2023 - Present\n"
+        "Develop enterprise applications using .NET 8.\n"
+        "Qentelli | Senior Software Engineer | Jun 2022 - Feb 2023\n"
+        "Built scalable .NET 6 APIs.\n"
+        "Senior Developer | Tech Corp | 2021 - Present\n"
+        "Led a team of five developers.\n"
+    )
+    data = _restructure(text)
+    assert [(e.title, e.company, e.start_date, e.end_date) for e in data.experience] == [
+        ("Senior Software Engineer", "EPAM Systems", "2023", "Present"),
+        ("Senior Software Engineer", "Qentelli", "2022", "2023"),
+        ("Senior Developer", "Tech Corp", "2021", "Present"),
+    ]
+
+
+def test_parse_education_degree_then_institution():
+    """A degree line followed by the institution line is not duplicated."""
+    text = (
+        "Ziaur Rab\nz@example.com\n"
+        "Education\n"
+        "Bachelor of Science in Computer Science\nJ.P University\n"
+    )
+    data = _restructure(text)
+    assert [(e.institution, e.degree) for e in data.education] == [
+        ("J.P University", "Bachelor of Science in Computer Science")
+    ]

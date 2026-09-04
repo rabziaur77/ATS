@@ -372,6 +372,11 @@ def _looks_like_role_line(line: str) -> bool:
 def _parse_role_line(line: str, current: dict) -> None:
     """Extract title/company/location and dates from a role line.
 
+    Pipe-separated headings may be ordered either "Title | Company | Dates"
+    or "Company | Title | Dates". The segment that reads like a role heading
+    wins the title slot and the other becomes the company; a trailing location
+    segment is pulled off the end regardless of order.
+
     Args:
         line: A role heading line.
         current: The entry dict being built.
@@ -383,24 +388,33 @@ def _parse_role_line(line: str, current: dict) -> None:
         line = DATE_RANGE_RE.sub("", line)
 
     parts = [p.strip() for p in line.split("|") if p.strip()]
-    if parts:
+
+    # Trailing location segment ("... | New York, NY").
+    if len(parts) >= 2 and _looks_like_location(parts[-1]):
+        current["location"] = parts.pop().strip(" ,")
+
+    if len(parts) >= 2:
+        # Disambiguate "Title | Company" from "Company | Title". When a single
+        # segment clearly reads as a role heading, the other is the company;
+        # any other case falls back to the title-first ordering.
+        title_is_first = _looks_like_role_line(parts[0])
+        company_is_first = _looks_like_role_line(parts[1])
+        if company_is_first and not title_is_first:
+            current["company"] = _strip_trailing_dash(parts[0]).strip(" ,")
+            current["title"] = _strip_trailing_dash(parts[1]).strip(" ,")
+        else:
+            current["title"] = _strip_trailing_dash(parts[0]).strip(" ,")
+            current["company"] = _strip_trailing_dash(parts[1]).strip(" ,")
+    elif parts:
         current["title"] = _strip_trailing_dash(parts[0]).strip(" ,")
-    if len(parts) >= 2:
-        current["company"] = parts[1].strip(" ,")
-    if len(parts) >= 3:
-        current["location"] = parts[2].strip(" ,")
-    elif parts and "·" in parts[0] and not current["location"]:
-        # Generated layouts put the designation and location on the sub-line
-        # ("Senior Developer · New York, NY"); split off a trailing location.
-        title, _, tail = parts[0].partition("·")
-        tail = tail.strip().strip(" ,")
-        if title.strip() and _looks_like_location(tail):
-            current["title"] = title.strip().strip(" ,")
-            current["location"] = tail
-    if len(parts) >= 2:
-        current["company"] = parts[1]
-    if len(parts) >= 3:
-        current["location"] = parts[2]
+        if "·" in parts[0] and not current["location"]:
+            # Generated layouts put the designation and location on the
+            # sub-line ("Senior Developer · New York, NY").
+            title, _, tail = parts[0].partition("·")
+            tail = tail.strip().strip(" ,")
+            if title.strip() and _looks_like_location(tail):
+                current["title"] = title.strip().strip(" ,")
+                current["location"] = tail
 
 
 def _finalize_experience(current: dict):
@@ -511,6 +525,8 @@ def _parse_education(lines: list[str]) -> list:
         current["institution"] = pending_institution
     elif pending_institution and current and current["degree"]:
         current["degree"] = (current["degree"] + " " + pending_institution).strip()
+    if current and current["degree"] and not current["institution"]:
+        current["institution"] = _clean_degree(current["degree"])
     finalize()
     return entries
 
@@ -585,8 +601,6 @@ def _parse_education_line(line: str, current: dict) -> None:
         current["institution"] = parts[1].strip(", ")
     elif parts:
         current["degree"] = _clean_degree(parts[0])
-        if not current["institution"]:
-            current["institution"] = _strip_trailing_dash(parts[0]).strip(", ")
 
 
 def _strip_trailing_dash(value: str) -> str:

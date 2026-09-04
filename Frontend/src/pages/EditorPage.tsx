@@ -7,7 +7,7 @@
 
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import PreviewPane from "../components/PreviewPane";
+import LiveResumePreview from "../components/LiveResumePreview";
 import ResumeEditor from "../components/ResumeEditor";
 import { useResume, useSaveResume } from "../hooks/useResume";
 import { useTemplates } from "../hooks/useTemplates";
@@ -78,7 +78,7 @@ export default function EditorPage() {
             </select>
           </div>
           <div className="h-[600px]">
-            <PreviewPane resumeId={resumeId} templateId={templateId} />
+            <LiveResumePreview parsed={parsed} templateId={templateId} />
           </div>
         </section>
 
