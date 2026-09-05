@@ -47,15 +47,7 @@ export default function TemplatePage() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Confirm your template
-          </h2>
-          <p className="text-sm text-gray-500">
-            Review the preview for your selected template, then generate.
-          </p>
-        </div>
+      <div className="mb-4">
         <button
           type="button"
           onClick={() => navigate(`/editor/${resumeId}`)}
@@ -63,6 +55,14 @@ export default function TemplatePage() {
         >
           ← Back to editor
         </button>
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Confirm your template
+          </h2>
+          <p className="text-sm text-gray-500">
+            Review the preview for your selected template, then generate.
+          </p>
+        </div>
       </div>
 
       <div className="max-w-3xl mx-auto">

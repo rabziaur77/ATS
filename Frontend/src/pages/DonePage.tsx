@@ -64,13 +64,12 @@ export default function DonePage() {
         >
           Choose a different template
         </Link>
-        <button
-          type="button"
-          onClick={() => navigate("/")}
-          className="text-sm text-gray-500 hover:underline"
+        <Link
+          to={`/`}
+          className="text-sm text-blue-600 hover:underline"
         >
           Upload a new CV
-        </button>
+        </Link>
       </div>
     </div>
   );

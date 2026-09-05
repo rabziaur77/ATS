@@ -40,7 +40,7 @@ Download
 | Styling         | TailwindCSS                              |
 | Server state    | TanStack Query (React Query)             |
 | HTTP client     | Axios (base URL + X-Session-ID header)   |
-| Resume preview  | Backend HTML preview rendered in an iframe |
+| Resume preview  | Client-side in editor (`LiveResumePreview`); backend HTML iframe on TemplatePage (`PreviewPane`) |
 
 ---
 
@@ -53,9 +53,9 @@ npm install          # install dependencies
 npm run dev          # dev server (http://localhost:5173)
 npm run build        # production build
 npm run preview      # preview the production build
-npm run lint         # lint (ESLint) if configured
 npm run typecheck    # tsc --noEmit for type checking
 ```
+> No ESLint is configured — `typecheck` is the only frontend verification command.
 
 The Vite dev server proxies `/api` → `http://127.0.0.1:8000` (the backend). Run the backend (`uvicorn app.main:app --reload` in `../Backend`) alongside `npm run dev`.
 
@@ -82,10 +82,11 @@ Frontend/
 │   ├── components/
 │   │   ├── Layout.tsx
 │   │   ├── UploadDropzone.tsx
-│   │   ├── TemplateCard.tsx
-│   │   ├── TemplatePicker.tsx
+│   │   ├── LiveResumePreview.tsx  # client-side live preview (zero API calls)
+│   │   ├── resumePreview/
+│   │   │   └── templates.ts       # client-side specs mirroring backend templates
 │   │   ├── ResumeEditor.tsx  # editable parsed-data forms
-│   │   └── PreviewPane.tsx   # iframe of /preview HTML
+│   │   └── PreviewPane.tsx   # backend /preview HTML in an iframe
 │   ├── pages/
 │   │   ├── UploadPage.tsx
 │   │   ├── EditorPage.tsx
@@ -105,7 +106,10 @@ Frontend/
 - **Server state via React Query:** query/mutation hooks live in `hooks/`; no manual fetch orchestration for CRUD. Pages consume hooks; components stay presentational.
 - **Single HTTP client:** all requests go through `lib/api.ts`. Requests to the backend are never made directly with raw `fetch` or ad-hoc axios instances.
 - **Session scoping:** every request carries `X-Session-ID` from `lib/session.ts` (a per-browser id in localStorage). Built-in templates are read-only/global; only custom templates are editable in the UI.
-- **Preview via iframe:** the live resume preview is rendered by embedding the backend HTML preview endpoint, not re-rendered client-side.
+- **Two preview systems (don't conflate):**
+  - Editor live preview is **client-side** (`LiveResumePreview` + `resumePreview/templates.ts`) — zero network calls while typing; its specs transcribe the backend Jinja templates' CSS/structure.
+  - TemplatePage confirmation uses the **backend iframe** (`PreviewPane` → `GET /api/resume/{id}/preview?template_id=`, which requires the template query param).
+  - **Keep `templates.ts` in sync** with `Backend/app/templates/<name>/template.html` + `config.json` — if you change a backend built-in template, update the matching spec here or the editor preview diverges from real output.
 - **The UI must follow the ACTUAL implemented backend contract** (see API mapping below), which differs slightly from the backend plan's tables: listing is `GET /api/resume/list`, and download targets a stored `generated_id`.
 
 ---
@@ -188,8 +192,8 @@ interface TemplateListOut { count: number; items: TemplateOut[] }
 
 - **UploadPage** — upload CV (`POST /api/upload/cv`), parsing state, navigate to `/editor/:id` on success.
 - **EditorPage** — load/resume data; editable forms for all parsed sections; live preview; "Save & Continue" (`PUT /api/resume/{id}`).
-- **TemplatePage** — template grid (`GET /api/templates`); selecting refreshes preview; "Generate" (`POST .../generate`).
-- **DonePage** — show result; download buttons (PDF/DOCX/HTML) via `GET .../download/{generated_id}`.
+- **TemplatePage** — confirms the template already chosen in the editor (passed via `?template=` query param, default `classic`); renders it with the backend iframe preview (`PreviewPane`); "Generate PDF/DOCX" (`POST .../generate`) → navigates to DonePage.
+- **DonePage** — "Download" link for the generated file (`GET .../download/{generated_id}`), using route state (`{resumeId, generatedId, format}`) from the generate step.
 
 ---
 

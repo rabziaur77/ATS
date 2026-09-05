@@ -134,7 +134,7 @@ Backend/
 - **Layered separation:** routers → services → models/schemas. Routers stay thin; business logic lives in `services/`.
 - **Parsing:** every uploaded CV (PDF/DOCX/TXT) is converted into the structured parsed-data schema below.
 - **Rendering:** three independent output generators (PDF/DOCX/HTML) consume the same template-ready data produced by `resume_processor.py`.
-- **Templates:** each of the 10 built-in templates ships with a Jinja2 HTML template, a layout config JSON, a reportlab config, and a python-docx config. Custom (user) templates are stored in the database.
+- **Templates:** each of the 10 built-in templates ships with a `template.html` (Jinja2) + a small `config.json` (`name`, `layout`, `accent_color`, `font_family`, `section_order`). There is no separate reportlab/docx config — all three output formats render from that same HTML via `html_generator.py` (PDF goes through Playwright/Chromium). Custom (user) templates are stored in the database and rendered in a sandbox.
 - **AI is optional:** `ai_service.py` enhances parsing/restructuring, but rule-based parsing must always work as a fallback.
 - **Storage:** uploaded CVs → `uploads/`; generated resumes → `outputs/`. Paths are stored in the DB, not the binaries.
 
@@ -275,14 +275,14 @@ classic · modern · minimal · executive · technical · professional · academ
 ### Upload
 - `POST /api/upload/cv` — upload CV, returns parsed structured data
 
-### Resume
-- `GET /api/resume/{id}` — get parsed resume data
-- `PUT /api/resume/{id}` — update/edit parsed resume data
-- `POST /api/resume/{id}/generate` — generate resume from parsed data
-- `GET /api/resume/{id}/download/{format}` — download as PDF/DOCX
-- `GET /api/resume/{id}/preview` — preview as HTML
-- `GET /api/resumes` — list all user resumes
+### Resume (implemented contract)
+- `GET /api/resume/list` — list resumes for the session
+- `GET /api/resume/{id}` — get a resume with parsed data
+- `PUT /api/resume/{id}` — update parsed data
 - `DELETE /api/resume/{id}` — delete a resume
+- `POST /api/resume/{id}/generate` — generate PDF/DOCX/HTML ({template_id, format, parsed_data?})
+- `GET /api/resume/{id}/preview?template_id=` — HTML preview (template_id is required)
+- `GET /api/resume/{id}/download/{generated_id}` — download a generated file
 
 ### Templates
 - `GET /api/templates` — list all available templates
@@ -301,9 +301,9 @@ classic · modern · minimal · executive · technical · professional · academ
 | `ai_service` | Optional OpenAI enhancement with rule-based fallback |
 | `resume_processor` | Reorder/normalize parsed data to match selected template |
 | `template_service` | Resolve built-in (filesystem) vs custom (DB) templates |
-| `pdf_generator` | Render PDF via reportlab per template config |
-| `docx_generator` | Render DOCX via python-docx per template config |
-| `html_generator` | Render HTML via Jinja2 template |
+| `pdf_generator` | Thin wrapper: render PDF via `html_generator.render_pdf` (Jinja2 HTML → Playwright Chromium) |
+| `docx_generator` | Generate DOCX via python-docx from the same rendered HTML |
+| `html_generator` | Render HTML via Jinja2 (custom templates use `SandboxedEnvironment`) |
 
 ---
 
