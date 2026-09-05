@@ -4,10 +4,12 @@
  * Purpose: Renders live HTML resume preview inside an iframe.
  */
 
+import { API_BASE_URL } from "../lib/api";
+
 /** Build the preview src URL for a resume and template. */
 export function previewUrl(resumeId: number, templateId: string): string {
   const query = new URLSearchParams({ template_id: templateId });
-  return `/api/resume/${resumeId}/preview?${query.toString()}`;
+  return `${API_BASE_URL}/resume/${resumeId}/preview?${query.toString()}`;
 }
 
 interface Props {

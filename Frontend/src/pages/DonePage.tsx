@@ -5,6 +5,7 @@
  */
 
 import { Link, useLocation } from "react-router-dom";
+import { API_BASE_URL } from "../lib/api";
 
 interface LocationState {
   generatedId: number;
@@ -14,7 +15,7 @@ interface LocationState {
 
 /** Build the download URL for a generated resume file. */
 function downloadUrl(resumeId: number, generatedId: number): string {
-  return `/api/resume/${resumeId}/download/${generatedId}`;
+  return `${API_BASE_URL}/resume/${resumeId}/download/${generatedId}`;
 }
 
 /** Done page: confirm generation and allow downloading the result. */

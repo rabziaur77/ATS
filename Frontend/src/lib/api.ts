@@ -14,6 +14,13 @@ export interface ApiError {
   message: string;
 }
 
+/**
+ * Base URL for backend requests. Defaults to the dev proxy ('/api'); override
+ * for a hosted backend via VITE_API_BASE_URL (e.g. https://<host>/api).
+ */
+export const API_BASE_URL: string =
+  import.meta.env.VITE_API_BASE_URL ?? "/api";
+
 /** Standard response envelope for our API client functions. */
 export class ApiClientError extends Error {
   code: string;
@@ -27,7 +34,7 @@ export class ApiClientError extends Error {
 }
 
 export const api = axios.create({
-  baseURL: "/api",
+  baseURL: API_BASE_URL,
   headers: {
     "X-Session-ID": getSessionId(),
   },
