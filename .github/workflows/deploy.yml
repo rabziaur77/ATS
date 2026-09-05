@@ -3,7 +3,7 @@ name: Deploy Frontend to GitHub Pages
 on:
   push:
     branches: [main]
-    paths: ["src/**", "package.json", "package-lock.json", "vite.config.ts", ".github/workflows/deploy.yml"]
+    paths: ["src/**", "package.json", "package-lock.json", "vite.config.ts", ".env*", ".github/workflows/deploy.yml"]
   workflow_dispatch:
 
 # Required by actions/deploy-pages for the GitHub Pages environment.
