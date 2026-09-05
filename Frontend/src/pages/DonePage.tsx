@@ -4,7 +4,7 @@
  * Purpose: Shows generation success and provides download links.
  */
 
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 interface LocationState {
   generatedId: number;
@@ -20,7 +20,6 @@ function downloadUrl(resumeId: number, generatedId: number): string {
 /** Done page: confirm generation and allow downloading the result. */
 export default function DonePage() {
   const location = useLocation();
-  const navigate = useNavigate();
   const state = (location.state ?? {}) as Partial<LocationState>;
 
   const resumeId = state.resumeId;
