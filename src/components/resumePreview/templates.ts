@@ -232,14 +232,14 @@ li{font-size:11px;margin-bottom:2px;}
 const DEFAULT_ORDER: SectionKey[] = [
   "summary",
   "experience",
-  "education",
   "skills",
+  "education",
   "certifications",
   "languages",
   "projects",
 ];
 
-const FULL_CONTACT = ["email", "phone", "location", "linkedin", "website"];
+const FULL_CONTACT = ["email", "phone", "location", "linkedin", "website"];//["location"]; 
 
 /** All 10 built-in template style specifications. */
 export const TEMPLATE_SPECS: TemplateStyleSpec[] = [

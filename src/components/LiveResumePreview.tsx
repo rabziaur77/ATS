@@ -19,8 +19,8 @@ import {
 } from "./resumePreview/templates";
 
 const DEFAULT_TITLES: Record<SectionKey, string> = {
-  summary: "Summary",
-  experience: "Experience",
+  summary: "Professional Summary",
+  experience: "Professional Experience",
   education: "Education",
   skills: "Skills",
   certifications: "Certifications",
