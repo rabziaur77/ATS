@@ -61,3 +61,43 @@ export function useGenerateResume(id: number) {
     mutationFn: (req: GenerateRequest) => generateResume(id, req),
   });
 }
+
+/**
+ * Fetch the HTML preview for a resume and template via the shared axios
+ * client so the real X-Session-ID header is attached (cross-origin iframe
+ * loads cannot carry custom headers).
+ */
+async function fetchResumePreview(id: number, templateId: string): Promise<string> {
+  const { data } = await api.get<string>(`/resume/${id}/preview`, {
+    params: { template_id: templateId },
+    responseType: "text",
+  });
+  return data;
+}
+
+/** Query hook for the backend-rendered HTML preview of a resume/template. */
+export function useResumePreview(id: number, templateId: string) {
+  return useQuery({
+    queryKey: ["resume", id, "preview", templateId],
+    queryFn: () => fetchResumePreview(id, templateId),
+    enabled: id > 0 && templateId.length > 0,
+  });
+}
+
+/**
+ * Fetch a generated resume file as a Blob via the shared axios client so the
+ * session header authenticates the download.
+ */
+async function downloadResume(id: number, generatedId: number): Promise<Blob> {
+  const { data } = await api.get<Blob>(`/resume/${id}/download/${generatedId}`, {
+    responseType: "blob",
+  });
+  return data;
+}
+
+/** Mutation hook for downloading a generated resume file. */
+export function useDownloadResume(id: number, generatedId: number) {
+  return useMutation({
+    mutationFn: () => downloadResume(id, generatedId),
+  });
+}

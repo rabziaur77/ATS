@@ -43,13 +43,29 @@ export const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const data = error.response?.data?.error;
-    const message: string = data?.message || error.message || "Request failed";
-    const code: string = data?.code || "unknown_error";
+    // error.response.data can be a string when a call used responseType
+    // "text" (e.g. the HTML preview fetch); parse it to surface the
+    // backend's normalized {error: {code, message}} shape.
+    let data: unknown = error.response?.data;
+    if (typeof data === "string" && data.length > 0) {
+      try {
+        data = JSON.parse(data);
+      } catch {
+        // Not JSON (e.g. a plain text error); keep the raw message fallback.
+      }
+    }
+    const parsed = data as { error?: { code?: string; message?: string } } | null;
+    const message: string = parsed?.error?.message || error.message || "Request failed";
+    const code: string = parsed?.error?.code || "unknown_error";
     const status: number | undefined = error.response?.status;
     return Promise.reject(new ApiClientError(message, code, status));
   }
 );
+
+/** True when the error is a backend session-scoping rejection. */
+export function isScopingError(err: unknown): boolean {
+  return err instanceof ApiClientError && err.code === "scoping_violation";
+}
 
 /** Extract a human-friendly message from an unknown thrown error. */
 export function errorMessage(err: unknown): string {
